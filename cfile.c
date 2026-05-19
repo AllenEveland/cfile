@@ -594,6 +594,7 @@ int main(int argc, char *argv[]) {
         if(Time_Chronology(FileMetadata->filename[i]) != 1) exit(1);
         if(System_Flags(FileMetadata->filename[i]) != 1) exit(1);
         printf("=======================================================================\n");
+        printf("\n");
     }
 
     /*
