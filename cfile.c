@@ -523,6 +523,7 @@ void BasicInformation(const char* file) {
 
     // free memory allocated by strdup()
     free(basic_information.filename);
+    free(basic_information.type.mimetype);
 }
 
 void StorageDetails(const char* file) {
@@ -659,7 +660,7 @@ int main(int argc, char**argv) {
         return 0;
     }
     if(strcmp(argv[1] , "-v") == 0) {
-        printf("cfile version: 0.2#dev\n");
+        printf("cfile version: 0.2.1#dev\n");
         return 0;
     }
 
@@ -682,7 +683,6 @@ int main(int argc, char**argv) {
 
     // Starting extract file metadata;
     PrintingMetadata(*FileMetadata);
-    free(FileMetadata->filename);
     free(FileMetadata);
 
     // Return 0
