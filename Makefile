@@ -14,6 +14,6 @@ clean:
 	rm -rf $(EXE) compile_commands.json
 
 install:
-	cp $(SRC) $(DIR)
+	cp $(EXE) $(DIR)
 
 .PHONY: all clean install
