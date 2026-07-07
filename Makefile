@@ -11,7 +11,7 @@ all: $(SRC)
 	$(CC) $(CFLAGS) $(FFLAGS) $(LDFLAGS) $(SRC) -o $(EXE) $(LIBS)
 
 clean:
-	rm -rf $(EXE) compile_commands.json
+	rm -rf $(EXE)
 
 install:
 	cp $(EXE) $(DIR)

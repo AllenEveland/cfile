@@ -119,37 +119,36 @@ struct TIME_CHORONOLOGY {
 
 // ### Function ### //
 void Usage(void) {
-    printf("Usage: cfile [file1, file2, ...]\n");
+    printf("Usage: cfile file...\n");
 }
 
 int check_file_valid(char *filename) {
     if (filename == NULL) {
-        fprintf(stderr, "\x1b[31mERROR\x1b[0m: No filename provided.\n");
-        return 1;
+        fprintf(stderr, "\x1b[31m[x]\x1b[0m No filename provided.\n");
+        return 0;
     }
-
+    if (strpbrk(filename, "/\\") != NULL) {
+        fprintf(stderr, "\x1b[31m[x]\x1b[0m Path not allowed, only filename: %s\n", filename);
+        return 0;
+    }
     if (access(filename, F_OK) != 0) {
-        fprintf(stderr, "\x1b[31mERROR\x1b[0m: File not found: %s\n", filename);
-        return 1;
+        fprintf(stderr, "\x1b[31m[x]\x1b[0m File not found: %s\n", filename);
+        return 0;
     }
-
     if (access(filename, R_OK) != 0) {
-        fprintf(stderr, "\x1b[31mERROR\x1b[0m: File not readable: %s\n", filename);
-        return 1;
+        fprintf(stderr, "\x1b[31m[x]\x1b[0m File not readable: %s\n", filename);
+        return 0;
     }
-
-    return 0;
+    return 1;
 }
 
 int ArgParse(struct FILEMETADATA *FileMetadata, int argc, char *argv[]) {
     for (int tok = 1; tok < argc; tok++) {
-        int ret = check_file_valid(argv[tok]);
-
-        if (ret == 0) {
+        if (check_file_valid(argv[tok])) {
             if (FileMetadata->count_file == FileMetadata->cap_file) {
                 uint32_t new_cap = FileMetadata->cap_file
                     ? FileMetadata->cap_file * 2
-                    : 4;
+                    : 1;
                 char **tmp = realloc(FileMetadata->filename, new_cap * sizeof(char *));
                 if (!tmp) {
                     fprintf(stderr, "\x1b[31mERROR\x1b[0m: Cannot reallocate memory.\n");
@@ -159,8 +158,9 @@ int ArgParse(struct FILEMETADATA *FileMetadata, int argc, char *argv[]) {
                 FileMetadata->cap_file = new_cap;
             }
             FileMetadata->filename[FileMetadata->count_file++] = argv[tok];
-        } else {
-            fprintf(stderr, "\x1b[31mERROR\x1b[0m: Unknown flag or value: %s\n", argv[tok]);
+        }
+        else {
+            fprintf(stderr, "\x1b[31mERROR\x1b[0m: Invalid input with %s\n", argv[tok]);
             return 1;
         }
     }
