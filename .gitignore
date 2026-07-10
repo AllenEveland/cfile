@@ -1,6 +1,4 @@
 cfile
 flags.txt
-compile_commands.json
 format_output_example.txt
 
-.cache/
