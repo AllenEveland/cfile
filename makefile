@@ -1,6 +1,6 @@
 CC		:= gcc
-CFLAGS  := -Wall -Wextra -Wshadow -Wpedantic -Wconversion -std=c17 -O3
-LDFLAGS	:= -Wl,--gc-sections -Wl,-O3 -Wl,--strip-debug
+CFLAGS  := -Wall -Wextra -Wshadow -Wpedantic -Wconversion -std=c17 -O2
+LDFLAGS	:= -Wl,--gc-sections -Wl,--strip-debug
 FFLAGS	:= -fno-unwind-tables -ffunction-sections -fdata-sections -fomit-frame-pointer -fno-stack-protector
 LIBS	:= -lmagic
 SRC		:= cfile.c

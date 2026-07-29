@@ -10,32 +10,21 @@
 ### Clone the repository
 
 ```bash
-git clone https://github.com/AllenEveland/cfile.git
-cd cfile
-```
-
-### Build
-
-```bash
+git clone https://github.com/AllenEveland/cfile.git && cd cfile
 make
-```
-
-### Install
-
-```bash
 sudo make install
 ```
 
 ## Usage
 
 ```bash
-cfile file1, file2, ...
+cfile file...
 ```
 
 Example:
 
 ```bash
-cfile test.txt
+cfile makefile cfile.c
 ```
 ## Contributing
 

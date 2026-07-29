@@ -124,19 +124,19 @@ void Usage(void) {
 
 int check_file_valid(char *filename) {
     if (filename == NULL) {
-        fprintf(stderr, "\x1b[31m[x]\x1b[0m No filename provided.\n");
+        fprintf(stderr, "\x1b[31mERROR\x1b[0m: No filename provided.\n");
         return 0;
     }
     if (strpbrk(filename, "/\\") != NULL) {
-        fprintf(stderr, "\x1b[31m[x]\x1b[0m Path not allowed, only filename: %s\n", filename);
+        fprintf(stderr, "\x1b[31mERROR\x1b[0m: Path not allowed, only filename: %s\n", filename);
         return 0;
     }
     if (access(filename, F_OK) != 0) {
-        fprintf(stderr, "\x1b[31m[x]\x1b[0m File not found: %s\n", filename);
+        fprintf(stderr, "\x1b[31mERROR\x1b[0m: File not found: %s\n", filename);
         return 0;
     }
     if (access(filename, R_OK) != 0) {
-        fprintf(stderr, "\x1b[31m[x]\x1b[0m File not readable: %s\n", filename);
+        fprintf(stderr, "\x1b[31mERROR\x1b[0m: File not readable: %s\n", filename);
         return 0;
     }
     return 1;
@@ -145,26 +145,35 @@ int check_file_valid(char *filename) {
 int ArgParse(struct FILEMETADATA *FileMetadata, int argc, char *argv[]) {
     for (int tok = 1; tok < argc; tok++) {
         if (check_file_valid(argv[tok])) {
-            if (FileMetadata->count_file == FileMetadata->cap_file) {
-                uint32_t new_cap = FileMetadata->cap_file
-                    ? FileMetadata->cap_file * 2
-                    : 1;
-                char **tmp = realloc(FileMetadata->filename, new_cap * sizeof(char *));
+            if (FileMetadata->count_file >= FileMetadata->cap_file) {
+                uint32_t new_cap = FileMetadata->cap_file * 2;
+                char **tmp = realloc(FileMetadata->filename, new_cap * sizeof(char));
                 if (!tmp) {
-                    fprintf(stderr, "\x1b[31mERROR\x1b[0m: Cannot reallocate memory.\n");
+                    printf("\x1b[31mERROR\x1b[0m: Memory allocation failed at ArgParse\n");
                     return 1;
                 }
                 FileMetadata->filename = tmp;
                 FileMetadata->cap_file = new_cap;
             }
-            FileMetadata->filename[FileMetadata->count_file++] = argv[tok];
+            FileMetadata->filename[FileMetadata->count_file] = malloc(strlen(argv[tok]));               // Allocate memory for save filename
+            memcpy(FileMetadata->filename[FileMetadata->count_file], argv[tok], strlen(argv[tok]));     // Copy filename to destination
+            FileMetadata->count_file += 1;                                                              // Increase count
         }
         else {
-            fprintf(stderr, "\x1b[31mERROR\x1b[0m: Invalid input with %s\n", argv[tok]);
+            printf("\x1b[31mERROR\x1b[0m: Invalid input with %s\n", argv[tok]);
             return 1;
         }
     }
     return 0;
+}
+
+void MemFree(struct FILEMETADATA *FileMetadata) {
+    for(uint32_t i = 0; i < FileMetadata->count_file; i++) {
+        free(FileMetadata->filename[i]);
+    }
+    FileMetadata->count_file = 0;
+    FileMetadata->cap_file = 0;
+    free(FileMetadata->filename);
 }
 
 char *MIME_file_type(const char* file) {
@@ -246,7 +255,7 @@ ino_t get_inode_number(const char *file) {
 
 nlink_t get_hard_link(const char *file) {
     struct stat s;
-    
+
     if(lstat(file, &s) == -1) {
         // printf("\x1b[31mERROR\x1b[0m: Can not get number of hard link.\n");
         return (nlink_t)0;
@@ -660,32 +669,36 @@ int main(int argc, char**argv) {
         return 0;
     }
     if(strcmp(argv[1] , "-v") == 0) {
-        printf("cfile version: 0.2.1#dev\n");
+        printf("cfile version: 0.2.2#dev\n");
         return 0;
     }
 
     // Initalize all data
-    struct FILEMETADATA *FileMetadata = calloc(1, sizeof(*FileMetadata));
-
-    int retParse = ArgParse(FileMetadata, argc, argv);
-    if(retParse != 0) {
-        free(FileMetadata->filename);
-        free(FileMetadata);
+    struct FILEMETADATA FileMetadata;
+    FileMetadata.count_file = 0;
+    FileMetadata.cap_file = 2;
+    FileMetadata.filename = malloc(FileMetadata.cap_file * sizeof(char));
+    if(!FileMetadata.filename) {
+        printf("\x1b[31mERROR\x1b[0m: Memory allocation failed at main\n");
         return 1;
     }
 
-    if(FileMetadata->filename == NULL) {
+    int retParse = ArgParse(&FileMetadata, argc, argv);
+    if(retParse != 0) {
+        MemFree(&FileMetadata);
+        exit(1);
+    }
+
+    if(FileMetadata.count_file == 0) {
         printf("\x1b[31mERROR\x1b[0m: Must be at least 1 file input\n");
-        free(FileMetadata->filename);
-        free(FileMetadata);
+        MemFree(&FileMetadata);
         exit(1);
     }
 
     // Starting extract file metadata;
-    PrintingMetadata(*FileMetadata);
-    free(FileMetadata);
+    PrintingMetadata(FileMetadata);
+    MemFree(&FileMetadata);
 
     // Return 0
     return 0;
 }
-
