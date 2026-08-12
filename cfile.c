@@ -122,13 +122,21 @@ void Usage(void) {
     printf("Usage: cfile file...\n");
 }
 
+int is_directory(const char *path) {
+    struct stat path_stat;
+    
+    // stat returns 0 on success; if it fails, the path does not exist or is inaccessible
+    if (stat(path, &path_stat) != 0) {
+        return 0; 
+    }
+    
+    // Check if the file system object is a directory
+    return S_ISDIR(path_stat.st_mode);
+}
+
 int check_file_valid(char *filename) {
     if (filename == NULL) {
         fprintf(stderr, "\x1b[31mERROR\x1b[0m: No filename provided.\n");
-        return 0;
-    }
-    if (strpbrk(filename, "/\\") != NULL) {
-        fprintf(stderr, "\x1b[31mERROR\x1b[0m: Path not allowed, only filename: %s\n", filename);
         return 0;
     }
     if (access(filename, F_OK) != 0) {
@@ -139,6 +147,11 @@ int check_file_valid(char *filename) {
         fprintf(stderr, "\x1b[31mERROR\x1b[0m: File not readable: %s\n", filename);
         return 0;
     }
+    if(is_directory(filename)) {
+        fprintf(stderr, "\x1b[31mERROR\x1b[0m: The directory check feature is not yet supported: %s\n", filename);
+        return 0;
+    }
+
     return 1;
 }
 
@@ -160,7 +173,7 @@ int ArgParse(struct FILEMETADATA *FileMetadata, int argc, char *argv[]) {
             FileMetadata->count_file += 1;                                                              // Increase count
         }
         else {
-            printf("\x1b[31mERROR\x1b[0m: Invalid input with %s\n", argv[tok]);
+            // printf("\x1b[31mERROR\x1b[0m: Invalid input with %s\n", argv[tok]);
             return 1;
         }
     }

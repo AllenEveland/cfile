@@ -26,14 +26,6 @@ Example:
 ```bash
 cfile makefile cfile.c
 ```
-## Contributing
-
-Contributions are welcome.
-
-If you find a bug or want to suggest a feature:
-
-1. Open an issue
-2. Submit a pull request
 
 ## License
 
